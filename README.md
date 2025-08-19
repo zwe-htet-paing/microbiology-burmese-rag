@@ -2,6 +2,8 @@
 
 An AI-powered Burmese-language question-answering system using Retrieval-Augmented Generation (RAG) and OpenAI GPT models. This project integrates a vector database for domain-specific Q&A retrieval, LangSmith for tracing model calls, and a Streamlit-based UI for interactive usage.
 
+![App Screenshot](assets/screenshot.png)
+
 ---
 
 ## Features
