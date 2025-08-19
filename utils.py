@@ -9,13 +9,21 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from dotenv import load_dotenv
 load_dotenv(dotenv_path=".env", override=True)
 
-def get_vector_db_retriever(csv_path="data/microbiology.csv", top_k=4):
+from sentence_transformers import SentenceTransformer, util
+
+# Load embeddings
+embeddings = OpenAIEmbeddings()
+
+# Load multilingual reranker model (supports Burmese + English)
+reranker_model = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
+
+
+def get_vector_db_retriever(csv_path="data/microbiology.csv", top_k=10):
     """
     Returns a LangChain retriever for a Q&A CSV dataset.
     Each row in CSV should have 'Instruction' and 'Output' columns.
     """
     persist_path = os.path.join(tempfile.gettempdir(), "qa_vectorstore.parquet")
-    embeddings = OpenAIEmbeddings()
 
     # Load existing vector store if available
     if os.path.exists(persist_path):
@@ -55,11 +63,26 @@ def get_vector_db_retriever(csv_path="data/microbiology.csv", top_k=4):
 
     return vectorstore.as_retriever(search_kwargs={"k": top_k})
 
+
+def rerank(query: str, documents: list[Document], top_n=4):
+    """Re-rank retrieved docs with multilingual model (Burmese + English)."""
+    if not documents:
+        return []
+    
+    query_emb = reranker_model.encode(query, convert_to_tensor=True)
+    doc_embs = reranker_model.encode([d.page_content for d in documents], convert_to_tensor=True)
+    scores = util.cos_sim(query_emb, doc_embs)[0]
+
+    ranked = sorted(zip(documents, scores), key=lambda x: x[1], reverse=True)
+    return [doc for doc, _ in ranked[:top_n]]
+
+
 if __name__ == "__main__":
     retriever = get_vector_db_retriever(csv_path="data/microbiology.csv", top_k=4)
 
     query = "အဏုဇီဝဗေဒ ဆိုတာ ဘာလဲ ရှင်းပြပါ"
     docs = retriever.get_relevant_documents(query)
-    for doc in docs:
+    rerank_docs = rerank(query, docs, top_n=4)
+    for doc in rerank_docs:
         print("--- Retrieved Document ---")
         print(doc.page_content)

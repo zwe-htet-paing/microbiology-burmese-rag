@@ -3,7 +3,7 @@ from openai import OpenAI
 from typing import List
 import nest_asyncio
 
-from utils import get_vector_db_retriever
+from utils import get_vector_db_retriever, rerank
 
 from dotenv import load_dotenv
 load_dotenv(dotenv_path=".env", override=True)
@@ -60,6 +60,11 @@ retrieve_documents
 def retrieve_documents(question: str):
     return retriever.invoke(question)
 
+@traceable(run_type="chain")
+def rerank_documents(question: str, documents: list):
+    docs = rerank(question, documents)
+    return docs
+
 """
 generate_response
 - Calls `call_openai` to generate a model response after formatting inputs
@@ -105,6 +110,7 @@ langsmith_rag
 @traceable(run_type="chain")
 def langsmith_rag(question: str):
     documents = retrieve_documents(question)
+    documents = rerank_documents(question, documents)
     response = generate_response(question, documents)
     return response.choices[0].message.content
 
