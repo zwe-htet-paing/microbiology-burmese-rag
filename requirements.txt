@@ -1,0 +1,11 @@
+langsmith>=0.2.0
+langchain-community
+langchain-core
+langchain-openai
+python-dotenv
+lxml
+notebook
+streamlit
+scikit-learn
+pandas
+pyarrow
