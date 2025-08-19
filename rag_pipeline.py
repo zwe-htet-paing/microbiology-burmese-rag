@@ -3,10 +3,13 @@ from openai import OpenAI
 from typing import List
 import nest_asyncio
 
-from utils import get_vector_db_retriever, rerank
+from utils import get_vector_db_retriever, rerank, apply_guardrails
 
 from dotenv import load_dotenv
 load_dotenv(dotenv_path=".env", override=True)
+
+import warnings
+warnings.filterwarnings("ignore")
 
 MODEL_NAME = "gpt-4o-mini"
 MODEL_PROVIDER = "openai"
@@ -52,25 +55,27 @@ openai_client = OpenAI()
 nest_asyncio.apply()
 retriever = get_vector_db_retriever()
 
-"""
-retrieve_documents
-- Returns documents fetched from a vectorstore based on the user's question
-"""
+
 @traceable(run_type="chain")
 def retrieve_documents(question: str):
+    """ 
+    - Returns documents fetched from a vectorstore based on the user's question 
+    """
     return retriever.invoke(question)
 
 @traceable(run_type="chain")
 def rerank_documents(question: str, documents: list):
+    """
+    - Return re-ranked documents based on the user's question
+    """
     docs = rerank(question, documents)
     return docs
 
-"""
-generate_response
-- Calls `call_openai` to generate a model response after formatting inputs
-"""
 @traceable(run_type="chain")
 def generate_response(question: str, documents):
+    """ 
+    - Calls `call_openai` to generate a model response after formatting inputs 
+    """
     formatted_docs = "\n\n".join(doc.page_content for doc in documents)
     messages = [
         {
@@ -84,10 +89,7 @@ def generate_response(question: str, documents):
     ]
     return call_openai(messages)
 
-"""
-call_openai
-- Returns the chat completion output from OpenAI
-"""
+
 @traceable(
     run_type="llm",
     metadata={
@@ -96,23 +98,27 @@ call_openai
     }
 )
 def call_openai(messages: List[dict]) -> str:
+    """ 
+    - Returns the chat completion output from OpenAI 
+    """
     return openai_client.chat.completions.create(
         model=MODEL_NAME,
         messages=messages,
     )
 
-"""
-langsmith_rag
-- Calls `retrieve_documents` to fetch documents
-- Calls `generate_response` to generate a response based on the fetched documents
-- Returns the model response
-"""
 @traceable(run_type="chain")
 def langsmith_rag(question: str):
+    """
+    - Calls `retrieve_documents` to fetch documents
+    - Calls `generate_response` to generate a response based on the fetched documents
+    - Returns the model response
+    """
     documents = retrieve_documents(question)
     documents = rerank_documents(question, documents)
     response = generate_response(question, documents)
-    return response.choices[0].message.content
+    
+    answer = apply_guardrails(question, response.choices[0].message.content)
+    return answer
 
 
 if __name__ == "__main__":
