@@ -9,3 +9,5 @@ streamlit
 scikit-learn
 pandas
 pyarrow
+sentence-transformers
+guardrails-ai
