@@ -1,6 +1,9 @@
 # Burmese Microbiology QA RAG Assistant
 
-An AI-powered Burmese-language question-answering system using Retrieval-Augmented Generation (RAG) and OpenAI GPT models. This project integrates a vector database for domain-specific Q&A retrieval, LangSmith for tracing model calls, and a Streamlit-based UI for interactive usage.
+An AI-powered Burmese-language question-answering system using Retrieval-Augmented Generation (RAG) and OpenAI GPT models. 
+
+This project integrates a vector database for domain-specific Q&A `retrieval`, a `reranker` module for improving result accuracy on Burmese queries, `LangSmith` for tracing model calls, and a Streamlit-based UI for interactive usage.  
+
 
 ![App Screenshot](assets/screenshot.png)
 
@@ -10,7 +13,8 @@ An AI-powered Burmese-language question-answering system using Retrieval-Augment
 
 - ✅ **Burmese-Language Support**: Answers questions in Burmese, even if the question is in English.  
 - ✅ **Follow-Up Handling**: Maintains conversation context for follow-up questions.  
-- ✅ **RAG System**: Retrieves relevant Q&A from a CSV-based knowledge base using vector embeddings.  
+- ✅ **RAG System**: Retrieves relevant Q&A from a CSV-based knowledge base using vector embeddings. 
+- ✅ **Reranker for Burmese Queries**: Improves retrieval accuracy by re-ranking documents with a multilingual embedding model.
 - ✅ **Streamlit UI**: Interactive web interface for asking questions and viewing AI responses.  
 - ✅ **Traceability with LangSmith**: Uses `@traceable` decorators to log and monitor document retrieval, response generation, and OpenAI API calls.  
 - ✅ **Experiment Notebooks**: Jupyter notebooks for testing new queries, prompts, and RAG configurations.
@@ -28,7 +32,7 @@ microbiology-burmese-rag/
 ├─ notebooks/
 │   └─ example_experiments.ipynb  # Jupyter notebooks for experimentation, testing vector DB & LLM
 │
-├─ utils.py                  # Vector DB retriever (SKLearnVectorStore)
+├─ utils.py                  # Vector DB retriever (SKLearnVectorStore) + reranker
 ├─ rag_pipeline.py           # RAG pipeline: document retrieval, OpenAI calls, LangSmith tracing
 ├─ app.py                    # Streamlit UI for interactive chat
 ├─ .env                      # Environment variables (e.g., OPENAI_API_KEY)
