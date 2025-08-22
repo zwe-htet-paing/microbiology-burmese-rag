@@ -55,7 +55,7 @@ cd microbiology-burmese-rag
 ### 2. **Install dependencies using Poetry:**
 - Configure Poetry to create the virtual environment inside the project:
     ```bash
-    poetry config settings.virtualenvs.in-project true
+    poetry config virtualenvs.in-project true
     ```
 
 - Install dependencies:
